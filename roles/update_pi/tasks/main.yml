@@ -1,0 +1,41 @@
+# pihole-dns - Ansible playbooks to configure a recursive PiHole DNS server
+# Copyright (C) 2022  Charles German <5donuts@pm.me>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+---
+- name: Update repositories
+  become_user: root
+  become: yes
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 604800 # Only update if cache is >= 1 week old
+
+- name: Update packages
+  become_user: root
+  become: yes
+  ansible.builtin.apt:
+    name: "*"
+    state: latest
+
+- name: Remove useless packages from the cache
+  become_user: root
+  become: yes
+  ansible.builtin.apt:
+    autoclean: yes
+
+- name: Remove unnecessary dependencies
+  become_user: root
+  become: yes
+  ansible.builtin.apt:
+    autoremove: yes
