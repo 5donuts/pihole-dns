@@ -14,7 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ---
-# I built this using the /etc/pihole/setupVars.conf generated using a
+# The path to place the install script at
+pihole_install_script_path: "/home/pi/Downloads/basic-install.sh"
+
+# I pulled these from the /etc/pihole/setupVars.conf generated using a
 # manual pihole install, so I'm sure there are more options you can set.
 
 # The network interface to use.
