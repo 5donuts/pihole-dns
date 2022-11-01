@@ -31,7 +31,7 @@
   delegate_to: localhost
   when: (web_password is defined) and (web_password|length > 0)
   ansible.builtin.shell: |
-    echo -n {{ web_password }} \
+    echo -n '{{ web_password }}' \
     | sha256sum \
     | awk '{printf "%s",$1 }' \
     | sha256sum \
