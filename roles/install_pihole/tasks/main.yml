@@ -17,7 +17,7 @@
 - name: Download PiHole installer
   ansible.builtin.get_url:
     url: https://install.pi-hole.net
-    dest: {{ pihole_install_script_path }}
+    dest: "{{ pihole_install_script_path }}"
     mode: '0744' # rwxr--r--
 
 - name: Make /etc/pihole if it doesn't exist
@@ -50,9 +50,9 @@
 
 - name: Run the PiHole install script
   ansible.builtin.shell:
-    cmd: {{ pihole_install_script_path }} --unattended
+    cmd: "{{ pihole_install_script_path }} --unattended"
 
 - name: Remove the install script
   ansible.builtin.file:
-    path: {{ pihole_install_script_path }}
+    path: "{{ pihole_install_script_path }}"
     state: absent
