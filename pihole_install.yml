@@ -20,3 +20,10 @@
   tasks:
   - import_role: 
       name: update_pi
+
+- name: Install PiHole
+  hosts: all
+  remote_user: pi
+  tasks:
+  - import_role:
+      name: install_pihole
