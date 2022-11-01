@@ -51,3 +51,8 @@
 - name: Run the PiHole install script
   ansible.builtin.shell:
     cmd: {{ pihole_install_script_path }} --unattended
+
+- name: Remove the install script
+  ansible.builtin.file:
+    path: {{ pihole_install_script_path }}
+    state: absent
