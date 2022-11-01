@@ -1,0 +1,54 @@
+# pihole-dns - Ansible playbooks to configure a recursive PiHole DNS server
+# Copyright (C) 2022  Charles German <5donuts@pm.me>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+---
+- name: Download PiHole installer
+  ansible.builtin.get_url:
+    url: https://install.pi-hole.net
+    dest: /home/pi/Downloads/basic-install.sh
+    mode: '0744' # rwxr--r--
+
+- name: Make /etc/pihole if it doesn't exist
+  become: yes # need to be 'root'
+  ansible.builtin.file:
+    path: /etc/pihole
+    state: directory
+    mode: '0755' # rwxr-xr-x
+
+- name: Hash the web admin password, if set
+  delegate_to: localhost
+  when: (web_password is defined) and (web_password|length > 0)
+  ansible.builtin.shell: |
+    echo -n {{ web_password }} \
+    | sha256sum \
+    | awk '{printf "%s",$1 }' \
+    | sha256sum \
+    | tr -d ' ' \
+    | tr -d '-'
+  register: hashed_web_password
+
+- name: Make PiHole config at /etc/pihole/setupVars.conf
+  become: yes
+  ansible.builtin.template:
+    src: templates/setupVars.conf.j2
+    dest: /etc/pihole/setupVars.conf
+    mode: '0644' # rw-r--r--
+    # Make a backup if there is already a (different) config
+    backup: yes
+
+- name: Run the PiHole install script
+  ansible.builtin.shell:
+    chdir: /home/pi/Downloads
+    cmd: ./basic-install.sh --unattended

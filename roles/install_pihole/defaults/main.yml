@@ -1,0 +1,49 @@
+# pihole-dns - Ansible playbooks to configure a recursive PiHole DNS server
+# Copyright (C) 2022  Charles German <5donuts@pm.me>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+---
+# I built this using the /etc/pihole/setupVars.conf generated using a
+# manual pihole install, so I'm sure there are more options you can set.
+
+# The network interface to use.
+# This will probably be eth0 on a Pi
+pihole_interface: "eth0"
+
+# The DNS servers to forward non-blocked requests to
+pihole_dns_servers: 
+  - "1.1.1.1" # Use CloudFlare DNS (only temporarily)
+  - "1.0.0.1"
+
+# Log DNS queries?
+query_logging: true
+
+# Install a web server?
+install_web_server: true
+
+# Install admin web interface?
+install_web_interface: true
+
+# The admin web interface password
+web_password: "p@ssword123" # change me!
+
+# Enable ad-blocking
+blocking_enabled: true
+
+# Other options
+lighttpd_enabled: true
+cache_size: 10000
+dns_fqdn_required: true
+dns_bogus_priv: true
+dnsmasq_listening: "local"

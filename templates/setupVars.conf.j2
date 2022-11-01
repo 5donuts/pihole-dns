@@ -1,0 +1,14 @@
+PIHOLE_INTERFACE={{ pihole_interface }}
+{% for ip in pihole_dns_servers %}
+PIHOLE_DNS_{{ loop.index }}={{ ip }}
+{% endfor %}
+QUERY_LOGGING={{ query_logging|lower }}
+INSTALL_WEB_SERVER={{ install_web_server|lower }}
+INSTALL_WEB_INTERFACE={{ install_web_interface|lower }}
+LIGHTTPD_ENABLED={{ lighttpd_enabled|lower }}
+CACHE_SIZE={{ cache_size }}
+DNS_FQDN_REQUIRED={{ dns_fqdn_required|lower }}
+DNS_BOGUS_PRIV={{ dns_bogus_priv|lower }}
+DNSMASQ_LISTENING={{ dnsmasq_listening }}
+WEBPASSWORD={{ hashed_web_password.stdout }}
+BLOCKING_ENABLED={{ blocking_enabled|lower }}
