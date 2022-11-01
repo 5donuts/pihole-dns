@@ -18,16 +18,32 @@
   ansible.builtin.apt:
     update_cache: yes
     cache_valid_time: 604800 # Only update if cache is >= 1 week old
+  become: yes # the default 'become_user' is 'root'
 
-- name: Update packages
+- name: Upgrade packages
   ansible.builtin.apt:
-    name: "*"
-    state: latest
+    upgrade: full
+  become: yes
 
-- name: Remove useless packages from the cache
+- name: Clean the cache
   ansible.builtin.apt:
     autoclean: yes
+  become: yes
 
-- name: Remove unnecessary dependencies
+- name: Remove unnecessary packages
   ansible.builtin.apt:
     autoremove: yes
+  become: yes
+
+# Only reboot when /var/run/reboot-required exists
+# See: https://askubuntu.com/a/1337721
+- name: Reboot if necessary
+  ansible.builtin.command:
+    cmd: shutdown -r now
+    removes: /var/run/reboot-required
+  register: restarted
+  become: yes
+
+- name: Waiting for restart...
+  ansible.builtin.wait_for_connection:
+  when: restarted.changed

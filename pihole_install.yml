@@ -17,8 +17,6 @@
 - name: Update Pi
   hosts: all
   remote_user: pi
-  become_user: root
-  become: yes
   tasks:
   - import_role: 
       name: update_pi
