@@ -34,7 +34,7 @@
     when: new_unbound_cfg.changed # don't restart unnecessarily
 
 # See: roles/install_unbound/defaults/main.yml for details
-- name: Reduce FTL EDNS reassembly buffer size
+- name: Reduce FTL (PiHole) EDNS reassembly buffer size
   become: yes
   ansible.builtin.template:
     src: templates/99-edns.conf.j2
