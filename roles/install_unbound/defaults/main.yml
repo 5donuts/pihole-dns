@@ -7,8 +7,8 @@ unbound_cfg:
   # logfile: "/var/log/unbound/unbound.log"
   verbosity: 0
 
-  interface: 127.0.0.1
-  port: 5335
+  interface: "{{ unbound_interface }}" # use the global variables here
+  port: "{{ unbound_port }}"
   do_ip4: "yes"
   do_udp: "yes"
   do_tcp: "yes"
