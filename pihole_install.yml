@@ -26,6 +26,6 @@
   remote_user: pi
   tasks:
   - import_role:
-      name: install_pihole
-  - import_role:
       name: install_unbound
+  - import_role:
+      name: install_pihole
