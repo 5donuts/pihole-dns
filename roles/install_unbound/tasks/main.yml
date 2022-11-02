@@ -1,0 +1,60 @@
+# pihole-dns - Ansible playbooks to configure a recursive PiHole DNS server
+# Copyright (C) 2022  Charles German <5donuts@pm.me>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+---
+- name: Install & configure unbound
+  become: yes
+  block:
+  - name: Install unbound
+    ansible.builtin.apt:
+      name: unbound
+      state: latest
+
+  - name: Write the /etc/unbound/unbound.conf.d/pi-hole.conf file
+    ansible.builtin.template:
+      src: templates/pi-hole.conf.j2
+      dest: /etc/unbound/unbound.conf.d/pi-hole.conf
+      mode: '0644' # rw-r--r--
+    register: new_unbound_cfg
+
+  - name: Restart the unbound daemon
+    ansible.builtin.shell: systemctl restart unbound
+    when: new_unbound_cfg.changed # don't restart unnecessarily
+
+# See: roles/install_unbound/defaults/main.yml for details
+- name: Reduce FTL EDNS reassembly buffer size
+  become: yes
+  ansible.builtin.template:
+    src: templates/99-edns.conf.j2
+    dest: /etc/dnsmasq.d/99-edns.conf
+    mode: '0644' # rw-r--r--
+
+- name: Verify unbound is working
+  block:
+  - name: Test DNS resolution
+    ansible.builtin.shell: dig pi-hole.net @{{ unbound_cfg.interface }} {{ unbound_cfg.port }}
+    register: this
+    failed_when: "('ANSWER SECTION' not in this.stdout) and ('NOERROR' not in this.stdout)"
+  
+  - name: Test DNSSEC validation
+    ansible.builtin.shell: dig sigfail.verteiltesysteme.net @{{ unbound_cfg.interface }} {{ unbound_cfg.port }}
+    register: this
+    failed_when: "'ANSWER SECTION' in this.stdout"
+  
+  - name: Test DNSSEC validation
+    ansible.builtin.shell: dig sigok.verteiltesysteme.net @{{ unbound_cfg.interface }} {{ unbound_cfg.port }}
+    register: this
+    failed_when: "('ANSWER SECTION' not in this.stdout) and ('NOERROR' not in this.stdout)"
+  when: new_unbound_cfg.changed # only run tests when we change the config
