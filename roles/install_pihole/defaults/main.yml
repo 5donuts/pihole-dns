@@ -26,8 +26,7 @@ pihole_interface: "eth0"
 
 # The DNS servers to forward non-blocked requests to
 pihole_dns_servers: 
-  - "1.1.1.1" # Use CloudFlare DNS (only temporarily)
-  - "1.0.0.1"
+  - "{{ unbound_interface }}#{{ unbound_port }}" # Use the local unbound DNS server
 
 # Log DNS queries?
 query_logging: true
