@@ -24,28 +24,65 @@ pihole_install_script_path: "/home/pi/Downloads/basic-install.sh"
 # This will probably be eth0 on a Pi
 pihole_interface: "eth0"
 
-# The DNS servers to forward non-blocked requests to
-pihole_dns_servers: 
-  - "{{ unbound_interface }}#{{ unbound_port }}" # Use the local unbound DNS server
-
 # Log DNS queries?
-query_logging: true
+query_logging: yes
 
 # Install a web server?
-install_web_server: true
+install_web_server: yes
+lighttpd_enabled: yes
 
 # Install admin web interface?
-install_web_interface: true
+web_admin_interface:
+  install: yes
+  password: "p@ssword123" # change me!
 
-# The admin web interface password
-web_password: "p@ssword123" # change me!
+# DNS settings
+dns:
+  # The DNS servers to forward non-blocked requests to
+  upstream_servers:
+    - "{{ unbound_interface }}#{{ unbound_port }}" # Use the local unbound DNS server
+
+  # This is the "Never forward non-FQDN A and AAAA queries" option in the web UI.
+  # When there is a Pi-hole domain set and this option is set, this asks FTL that this
+  # domain is purely local and FTL may answer queries from /etc/hosts or DHCP leases
+  # but should never forward queries on that domain to any upstream servers. If
+  # Conditional Forwarding is enabled, unsetting this option may cause a partial DNS
+  # loop under certain circumstances (e.g. if a client would send TLD DNSSEC queries).
+  never_forward_non_fqdn: yes
+
+  # This is the "Never forward reverse lookups for private IP ranges" option in the web UI.
+  # All reverse lookups for private IP ranges (i.e., 192.168.0.x/24, etc.) which are not
+  # found in /etc/hosts or the DHCP leases are answered with "no such domain" rather than
+  # being forwarded upstream. The set of prefixes affected is the list given in RFC6303.
+  # Important: Enabling this and `never_forward_non_fqdn` may increase your privacy, but may
+  # also prevent you from being able to access local hostnames if the Pi-hole is not used as
+  # the DHCP server.
+  never_forward_private_rev_lookups: yes
+
+  # This is the "Use DNSSEC" option in the web UI.
+  # Validate DNS replies and cache DNSSEC data. When forwarding DNS queries, Pi-hole requests
+  # the DNSSEC records needed to validate the replies. If a domain fails validation or the
+  # upstream does not support DNSSEC, this setting can cause issues resolving domains. Use an
+  # upstream DNS server which supports DNSSEC when activating DNSSEC. Note that the size of
+  # your log might increase significantly when enabling DNSSEC.
+  use_dnssec: yes
+
+  # These options correspond to the "Conditional Formatting" section in the web UI.
+  # If not configured as your DHCP server, Pi-hole typically won't be able to determine the names
+  # of devices on your local network. As a result, tables such as Top Clients will only show IP
+  # addresses. One solution for this is to configure Pi-hole to forward these requests to your
+  # DHCP server (most likely your router), but only for devices on your home network.
+  # Enabling Conditional Forwarding will also forward all hostnames (i.e., non-FQDNs) to the
+  # router when "Never forward non-FQDNs" is not enabled.
+  conditional_forwarding:
+    enabled: yes
+    local_network_cidr: 192.168.0.0/16
+    dhcp_server: 192.168.0.1
+    local_domain_name: "" # this is optional
 
 # Enable ad-blocking
-blocking_enabled: true
+blocking_enabled: yes
 
 # Other options
-lighttpd_enabled: true
 cache_size: 10000
-dns_fqdn_required: true
-dns_bogus_priv: true
 dnsmasq_listening: "local"
