@@ -54,8 +54,6 @@
         src: templates/setupVars.conf.j2
         dest: /etc/pihole/setupVars.conf
         mode: '0644' # rw-r--r--
-        # Make a backup if there is already a (different) config
-        backup: yes
   when: not pihole_already_installed
 
 - name: Install PiHole
