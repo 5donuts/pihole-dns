@@ -53,7 +53,7 @@
       vars:
         hashed_password: hash.stdout
       ansible.builtin.template:
-        src: roles/install_pihole/templates/setupVars.conf.j2
+        src: templates/setupVars.conf.j2
         dest: /etc/pihole/setupVars.conf
         mode: '0644' # rw-r--r--
   when: not pihole_already_installed
