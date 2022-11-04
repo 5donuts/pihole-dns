@@ -24,7 +24,7 @@
 
   - name: Write the /etc/unbound/unbound.conf.d/pi-hole.conf file
     ansible.builtin.template:
-      src: templates/pi-hole.conf.j2
+      src: roles/install_unbound/templates/pi-hole.conf.j2
       dest: /etc/unbound/unbound.conf.d/pi-hole.conf
       mode: '0644' # rw-r--r--
     register: new_unbound_cfg
@@ -37,7 +37,7 @@
 - name: Reduce FTL (PiHole) EDNS reassembly buffer size
   become: yes
   ansible.builtin.template:
-    src: templates/99-edns.conf.j2
+    src: roles/install_unbound/templates/99-edns.conf.j2
     dest: /etc/dnsmasq.d/99-edns.conf
     mode: '0644' # rw-r--r--
 
