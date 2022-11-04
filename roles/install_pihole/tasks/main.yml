@@ -58,22 +58,16 @@
         dest: "{{ pihole_core_script }}"
         mode: '0744' # rwxr--r--
 
-    - name: Hash the web admin password variable, if set
-      delegate_to: localhost
+    - name: Hash the web admin password, if set
       when: (web_admin_interface.password is defined) and (web_admin_interface.password|length > 0)
-      ansible.builtin.shell: |
-        echo -n '{{ web_admin_interface.password }}' \
-        | sha256sum \
-        | awk '{printf "%s",$1 }' \
-        | sha256sum \
-        | tr -d ' ' \
-        | tr -d '-'
-      register: hash
+      delegate_to: localhost
+      ansible.builtin.set_fact:
+        # See: https://discourse.pi-hole.net/t/what-is-setupvars-conf-and-how-do-i-use-it/3533/3
+        hashed_password: "{{ web_admin_interface.password | hash('sha256') | hash('sha256') }}"
+        cacheable: yes
 
     - name: Make PiHole config at /etc/pihole/setupVars.conf
       become: yes
-      vars:
-        hashed_password: "{{ hash.stdout }}"
       ansible.builtin.template:
         src: templates/setupVars.conf.j2
         dest: /etc/pihole/setupVars.conf
