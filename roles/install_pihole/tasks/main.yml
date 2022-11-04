@@ -46,10 +46,12 @@
         | sha256sum \
         | tr -d ' ' \
         | tr -d '-'
-      register: hashed_web_admin_password
+      register: hash
 
     - name: Make PiHole config at /etc/pihole/setupVars.conf
       become: yes
+      vars:
+        hashed_password: hash.stdout
       ansible.builtin.template:
         src: roles/install_pihole/templates/setupVars.conf.j2
         dest: /etc/pihole/setupVars.conf
