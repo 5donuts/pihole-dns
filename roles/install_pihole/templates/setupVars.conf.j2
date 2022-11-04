@@ -13,7 +13,9 @@ DNSMASQ_LISTENING={{ dnsmasq_listening }}
 DNSSEC={{ dns.use_dnssec|lower }}
 WEBPASSWORD={{ hashed_password }}
 BLOCKING_ENABLED={{ blocking_enabled|lower }}
+{% if dns.conditional_forwarding.enabled %}
 REV_SERVER={{ dns.conditional_forwarding.enabled|lower }}
 REV_SERVER_CIDR={{ dns.conditional_forwarding.local_network_cidr }}
 REV_SERVER_TARGET={{ dns.conditional_forwarding.dhcp_server }}
 REV_SERVER_DOMAIN={{ dns.conditional_forwarding.local_domain_name }}
+{% endif %}
