@@ -29,7 +29,6 @@ query_logging: yes
 
 # Install a web server?
 install_web_server: yes
-lighttpd_enabled: yes
 
 # Install admin web interface?
 web_admin_interface:
@@ -86,3 +85,4 @@ blocking_enabled: yes
 # Other options
 cache_size: 10000
 dnsmasq_listening: "local"
+lighttpd_enabled: yes
