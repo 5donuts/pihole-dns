@@ -1,0 +1,38 @@
+# pihole-dns - Ansible playbooks to configure a recursive PiHole DNS server
+# Copyright (C) 2022  Charles German <5donuts@pm.me>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+---
+- name: Restart unbound
+  ansible.builtin.systemd:
+    name: unbound
+    state: restarted
+    daemon_reload: yes
+
+- name: Validate unbound config
+  block:
+  - name: Test DNS resolution
+    ansible.builtin.shell: dig pi-hole.net @{{ unbound_cfg.interface }} {{ unbound_cfg.port }}
+    register: this
+    failed_when: "('ANSWER SECTION' not in this.stdout) and ('NOERROR' not in this.stdout)"
+  
+  - name: Test DNSSEC validation
+    ansible.builtin.shell: dig sigfail.verteiltesysteme.net @{{ unbound_cfg.interface }} {{ unbound_cfg.port }}
+    register: this
+    failed_when: "'ANSWER SECTION' in this.stdout"
+  
+  - name: Test DNSSEC validation
+    ansible.builtin.shell: dig sigok.verteiltesysteme.net @{{ unbound_cfg.interface }} {{ unbound_cfg.port }}
+    register: this
+    failed_when: "('ANSWER SECTION' not in this.stdout) and ('NOERROR' not in this.stdout)"

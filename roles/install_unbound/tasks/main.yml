@@ -27,14 +27,9 @@
       src: templates/pi-hole.conf.j2
       dest: /etc/unbound/unbound.conf.d/pi-hole.conf
       mode: '0644' # rw-r--r--
-    register: new_unbound_cfg
-
-  - name: Restart the unbound daemon
-    ansible.builtin.systemd:
-      name: unbound
-      state: restarted
-      daemon_reload: yes
-    when: new_unbound_cfg.changed # don't restart unnecessarily
+    notify:
+    - Restart unbound
+    - Validate unbound config
 
 # From the PiHole docs:
 # IP fragmentation is unreliable on the Internet today, and can cause
@@ -57,21 +52,3 @@
     src: templates/99-edns.conf.j2
     dest: /etc/dnsmasq.d/99-edns.conf
     mode: '0644' # rw-r--r--
-
-- name: Verify unbound is working
-  block:
-  - name: Test DNS resolution
-    ansible.builtin.shell: dig pi-hole.net @{{ unbound_cfg.interface }} {{ unbound_cfg.port }}
-    register: this
-    failed_when: "('ANSWER SECTION' not in this.stdout) and ('NOERROR' not in this.stdout)"
-  
-  - name: Test DNSSEC validation
-    ansible.builtin.shell: dig sigfail.verteiltesysteme.net @{{ unbound_cfg.interface }} {{ unbound_cfg.port }}
-    register: this
-    failed_when: "'ANSWER SECTION' in this.stdout"
-  
-  - name: Test DNSSEC validation
-    ansible.builtin.shell: dig sigok.verteiltesysteme.net @{{ unbound_cfg.interface }} {{ unbound_cfg.port }}
-    register: this
-    failed_when: "('ANSWER SECTION' not in this.stdout) and ('NOERROR' not in this.stdout)"
-  when: new_unbound_cfg.changed # only run tests when we change the config
