@@ -20,10 +20,14 @@
   - import_role: 
       name: update_pi
 
-- name: Install PiHole as a recursive DNS server
-  hosts: all
+- name: Install & configure unbound
+  hosts: unbound
   tasks:
   - import_role:
       name: install_unbound
+
+- name: Install PiHole as a recursive DNS server
+  hosts: all
+  tasks:
   - import_role:
       name: install_pihole

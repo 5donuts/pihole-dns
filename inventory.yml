@@ -18,5 +18,10 @@ all:
   # IP addresses of your Pi(s) to configure
   hosts:
     192.168.0.100:
-  vars:
-    ansible_user: pi
+      ansible_user: pi
+  children:
+    # Pi(s) to install Unbound on (so you can use the PiHole as a
+    # recursive DNS server)
+    unbound:
+      hosts:
+        192.168.0.100:
