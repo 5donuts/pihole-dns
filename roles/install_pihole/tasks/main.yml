@@ -27,8 +27,24 @@
         cacheable: yes
       when: check_for_pihole_cmd.stat.exists
 
-- name: Write the PiHole config to /etc/pihole/setupVars.conf
+- name: Set the PiHole config
   block:
+    - name: Get information on running services
+      ansible.builtin.service_facts:
+
+    - name: If unbound is not running, use upstream DNS servers
+      when: ansible_facts.services["unbound"] is not defined
+      ansible.builtin.include_vars: vars/upstream.yml
+
+    # We need to load the variable file that sets the unbound interface/port
+    # as well as the file that sets it as the upstream DNS server.
+    - name: If unbound is running, fetch its connection info
+      when: (ansible_facts.services["unbound"] is defined) and (ansible_facts.services["unbound"].state == "running")
+      ansible.builtin.include_vars: roles/install_unbound/vars/main.yml
+    - name: If unbound is running, use it as the DNS server
+      when: (ansible_facts.services["unbound"] is defined) and (ansible_facts.services["unbound"].state == "running")
+      ansible.builtin.include_vars: vars/unbound.yml
+
     - name: Make /etc/pihole if it doesn't exist
       become: yes # need to be 'root'
       ansible.builtin.file:
@@ -62,7 +78,6 @@
         src: templates/setupVars.conf.j2
         dest: /etc/pihole/setupVars.conf
         mode: '0644' # rw-r--r--
-  when: not pihole_already_installed
 
 # If PiHole is not yet installed, install it
 - name: Install PiHole

@@ -1,5 +1,5 @@
 PIHOLE_INTERFACE={{ pihole_interface }}
-{% for ip in dns.upstream_servers %}
+{% for ip in upstream_dns_servers %}
 PIHOLE_DNS_{{ loop.index }}={{ ip }}
 {% endfor %}
 QUERY_LOGGING={{ query_logging|lower }}

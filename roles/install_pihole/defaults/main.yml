@@ -35,10 +35,6 @@ web_admin_interface:
 
 # DNS settings
 dns:
-  # The DNS servers to forward non-blocked requests to
-  upstream_servers:
-    - "{{ unbound_interface }}#{{ unbound_port }}" # Use the local unbound DNS server
-
   # This is the "Never forward non-FQDN A and AAAA queries" option in the web UI.
   # When there is a Pi-hole domain set and this option is set, this asks FTL that this
   # domain is purely local and FTL may answer queries from /etc/hosts or DHCP leases
