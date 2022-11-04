@@ -36,6 +36,12 @@
         state: directory
         mode: '0777' # rwxrwxrwx
 
+    - name: Fetch the PiHole core script
+      ansible.builtin.get_url:
+        url: https://install.pi-hole.net
+        dest: "{{ pihole_core_script }}"
+        mode: '0744' # rwxr--r--
+
     - name: Hash the web admin password variable, if set
       delegate_to: localhost
       when: (web_admin_interface.password is defined) and (web_admin_interface.password|length > 0)
@@ -58,20 +64,11 @@
         mode: '0644' # rw-r--r--
   when: not pihole_already_installed
 
+# If PiHole is not yet installed, install it
 - name: Install PiHole
+  when: not pihole_already_installed
   block:
-    - name: Download PiHole installer
-      ansible.builtin.get_url:
-        url: https://install.pi-hole.net
-        dest: "{{ pihole_install_script_path }}"
-        mode: '0744' # rwxr--r--
-
     - name: Run the PiHole install script
       ansible.builtin.shell:
-        cmd: "{{ pihole_install_script_path }} --unattended"
+        cmd: "{{ pihole_core_script }} --unattended"
 
-    - name: Remove the install script
-      ansible.builtin.file:
-        path: "{{ pihole_install_script_path }}"
-        state: absent
-  when: not pihole_already_installed
