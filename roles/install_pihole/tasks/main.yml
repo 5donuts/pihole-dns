@@ -57,7 +57,7 @@
     - name: Make PiHole config at /etc/pihole/setupVars.conf
       become: yes
       vars:
-        hashed_password: hash.stdout
+        hashed_password: "{{ hash.stdout }}"
       ansible.builtin.template:
         src: templates/setupVars.conf.j2
         dest: /etc/pihole/setupVars.conf
