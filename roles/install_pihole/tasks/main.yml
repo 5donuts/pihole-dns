@@ -72,6 +72,7 @@
         src: templates/setupVars.conf.j2
         dest: /etc/pihole/setupVars.conf
         mode: '0644' # rw-r--r--
+      register: pihole_config
 
 # If PiHole is not yet installed, install it
 - name: Install PiHole
@@ -79,3 +80,8 @@
   ansible.builtin.shell:
     cmd: "{{ pihole_core_script }} --unattended"
 
+# If PiHole is already installed, reconfigure it
+- name: Reconfigure PiHole
+  when: pihole_already_installed and pihole_config.changed
+  ansible.builtin.shell:
+    cmd: "{{ pihole_core_script }} --reconfigure --unattended"
