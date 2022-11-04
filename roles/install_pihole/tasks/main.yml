@@ -51,7 +51,7 @@
     - name: Make PiHole config at /etc/pihole/setupVars.conf
       become: yes
       ansible.builtin.template:
-        src: templates/setupVars.conf.j2
+        src: roles/install_pihole/templates/setupVars.conf.j2
         dest: /etc/pihole/setupVars.conf
         mode: '0644' # rw-r--r--
   when: not pihole_already_installed
