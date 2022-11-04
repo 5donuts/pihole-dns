@@ -76,8 +76,6 @@
 # If PiHole is not yet installed, install it
 - name: Install PiHole
   when: not pihole_already_installed
-  block:
-    - name: Run the PiHole install script
-      ansible.builtin.shell:
-        cmd: "{{ pihole_core_script }} --unattended"
+  ansible.builtin.shell:
+    cmd: "{{ pihole_core_script }} --unattended"
 
