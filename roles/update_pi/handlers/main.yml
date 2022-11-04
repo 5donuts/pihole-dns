@@ -14,33 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ---
-- name: Update repositories
-  ansible.builtin.apt:
-    update_cache: yes
-    cache_valid_time: 604800 # Only update if cache is >= 1 week old
-  register: update_apt_cache
-
-- name: Update the Pi
-  become: yes # the default 'become_user' is 'root'
-  when: update_apt_cache.changed
+- name: Restart the Pi
   block:
-  - name: Upgrade packages
-    ansible.builtin.apt:
-      upgrade: full
+  - name: Trigger reboot
+    ansible.builtin.reboot:
 
-  - name: Clean the cache
-    ansible.builtin.apt:
-      autoclean: yes
-
-  - name: Remove unnecessary packages
-    ansible.builtin.apt:
-      autoremove: yes
-  
-  # Only reboot when /var/run/reboot-required exists
-  # See: https://askubuntu.com/a/1337721
-  - name: Check /var/run/reboot-required
-    ansible.builtin.file:
-      path: /var/run/reboot-required
-      state: absent
-    notify:
-    - Restart the Pi
+  - name: Wait for reboot to complete
+    ansible.builtin.wait_for_connection:
