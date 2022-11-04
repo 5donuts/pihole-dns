@@ -5,13 +5,15 @@ PIHOLE_DNS_{{ loop.index }}={{ ip }}
 QUERY_LOGGING={{ query_logging|lower }}
 INSTALL_WEB_SERVER={{ install_web_server|lower }}
 INSTALL_WEB_INTERFACE={{ web_admin_interface.install|lower }}
+{% if web_admin_interface.install %}
+WEBPASSWORD={{ hashed_password }}
+{% endif %}
 LIGHTTPD_ENABLED={{ lighttpd_enabled|lower }}
 CACHE_SIZE={{ cache_size }}
 DNS_FQDN_REQUIRED={{ dns.never_forward_non_fqdn|lower }}
 DNS_BOGUS_PRIV={{ dns.never_forward_private_rev_lookups|lower }}
 DNSMASQ_LISTENING={{ dnsmasq_listening }}
 DNSSEC={{ dns.use_dnssec|lower }}
-WEBPASSWORD={{ hashed_password }}
 BLOCKING_ENABLED={{ blocking_enabled|lower }}
 {% if dns.conditional_forwarding.enabled %}
 REV_SERVER={{ dns.conditional_forwarding.enabled|lower }}

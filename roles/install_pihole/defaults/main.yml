@@ -33,6 +33,7 @@ install_web_server: yes
 # Install admin web interface?
 web_admin_interface:
   install: yes
+  # This variable is only required if install is set to 'yes'
   password: "p@ssword123" # change me!
 
 # DNS settings
@@ -75,6 +76,7 @@ dns:
   # router when "Never forward non-FQDNs" is not enabled.
   conditional_forwarding:
     enabled: yes
+    # These variables are only required if enabled is set to 'yes'
     local_network_cidr: 192.168.0.0/16
     dhcp_server: 192.168.0.1
     local_domain_name: "" # this is optional
