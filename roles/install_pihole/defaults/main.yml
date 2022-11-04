@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ---
 # The path to place the install script at
-pihole_install_script_path: "/home/pi/Downloads/basic-install.sh"
+pihole_install_script_path: "{{ lookup('env', 'HOME') }}/basic-install.sh"
 
 # I pulled these from the /etc/pihole/setupVars.conf generated using a
 # manual pihole install, so I'm sure there are more options you can set.
