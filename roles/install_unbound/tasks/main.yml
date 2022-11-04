@@ -30,7 +30,10 @@
     register: new_unbound_cfg
 
   - name: Restart the unbound daemon
-    ansible.builtin.shell: systemctl restart unbound
+    ansible.builtin.systemd:
+      name: unbound
+      state: restarted
+      daemon_reload: yes
     when: new_unbound_cfg.changed # don't restart unnecessarily
 
 # See: defaults/main.yml for details
