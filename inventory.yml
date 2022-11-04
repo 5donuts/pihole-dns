@@ -15,5 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ---
 all:
+  # IP addresses of your Pi(s) to configure
   hosts:
-    # Your pi (or pis) to configure
+    192.168.0.100:
+  vars:
+    ansible_user: pi
