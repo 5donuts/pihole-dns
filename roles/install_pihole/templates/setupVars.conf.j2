@@ -38,3 +38,15 @@ REV_SERVER_CIDR={{ dns.conditional_forwarding.local_network_cidr }}
 REV_SERVER_TARGET={{ dns.conditional_forwarding.dhcp_server }}
 REV_SERVER_DOMAIN={{ dns.conditional_forwarding.local_domain_name }}
 {% endif %}
+{# If we also configure the Pi as the network DHCP server, add these settings #}
+{% if dhcp.enabled %}
+DHCP_ACTIVE={{ dhcp.enabled|lower }}
+DHCP_START={{ dhcp.start }}
+DHCP_END={{ dhcp.end }}
+DHCP_ROUTER={{ dhcp.router }}
+DHCP_LEASETIME={{ dhcp.lease_time_in_hours }}
+PIHOLE_DOMAIN={{ dhcp.domain }}
+{# These aren't typos; these options are just not all caps for some reason #}
+DHCP_IPv6={{ dhcp.do_ipv6|lower }}
+DHCP_rapid_commit={{ dhcp.do_v4_rapid_commit|lower }}
+{% endif %}

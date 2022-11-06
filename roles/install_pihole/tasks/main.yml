@@ -27,7 +27,7 @@
         cacheable: yes
       when: check_for_pihole_cmd.stat.exists
 
-- name: Set the PiHole config
+- name: Copy over the PiHole config
   block:
     - name: Get information on running services
       ansible.builtin.service_facts:
@@ -65,6 +65,10 @@
         # See: https://discourse.pi-hole.net/t/what-is-setupvars-conf-and-how-do-i-use-it/3533/3
         hashed_password: "{{ web_admin_interface.password | hash('sha256') | hash('sha256') }}"
         cacheable: yes
+
+    - name: Load the DHCP config, if set
+      when: (configure_pihole_dhcp is defined) and configure_pihole_dhcp
+      ansible.builtin.include_vars: roles/configure_dhcp/defaults/main.yml
 
     - name: Make PiHole config at /etc/pihole/setupVars.conf
       become: yes

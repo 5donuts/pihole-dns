@@ -14,21 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ---
-# List of static IP assignments for when PiHole is the network's DHCP server
-static_ip_assignments:
-  - mac: "E4:5F:01:46:29:33"
-    ip: 192.168.0.100
-    hostname: raspberrypi
+- name: Copy over the DHCP config
+  become: yes
+  ansible.builtin.template:
+    src: templates/04-pihole-static-dhcp.conf.j2
+    dest: "{{ pihole_static_dhcp_path }}"
+    mode: '0644' # rw-r--r--
+  when: (dhcp.enabled is defined) and dhcp.enabled
 
-# Other DHCP options to set
-dhcp:
-  enabled: yes
-  start: 192.168.0.2 # the first address on the network to assign
-  end: 192.168.0.254 # the last address on the network to assign
-  # The IP address of the router on the network; generally this will be
-  # the gateway address.
-  router: 192.168.0.1
-  lease_time_in_hours: 24 # how long a DHCP lease is valid for
-  domain: "lan"
-  do_ipv6: no
-  do_v4_rapid_commit: no
+- name: Mark PiHole DHCP to be configured
+  ansible.builtin.set_fact:
+    configure_pihole_dhcp: yes
+    cacheable: yes
+  when: (dhcp.enabled is defined) and dhcp.enabled
