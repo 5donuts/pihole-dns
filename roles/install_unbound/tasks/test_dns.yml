@@ -14,11 +14,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ---
-- name: Restart unbound
-  ansible.builtin.systemd:
-    name: unbound
-    state: restarted
-    daemon_reload: yes
+- name: Test DNS resolution
+  ansible.builtin.shell: dig pi-hole.net @{{ unbound_cfg.interface }} {{ unbound_cfg.port }}
+  register: this
+  failed_when: "('ANSWER SECTION' not in this.stdout) and ('NOERROR' not in this.stdout)"
 
-- name: Validate unbound config
-  ansible.builtin.include_tasks: tasks/test_dns.yml
+- name: Test DNSSEC validation
+  ansible.builtin.shell: dig sigfail.verteiltesysteme.net @{{ unbound_cfg.interface }} {{ unbound_cfg.port }}
+  register: this
+  failed_when: "'ANSWER SECTION' in this.stdout"
+
+- name: Test DNSSEC validation
+  ansible.builtin.shell: dig sigok.verteiltesysteme.net @{{ unbound_cfg.interface }} {{ unbound_cfg.port }}
+  register: this
+  failed_when: "('ANSWER SECTION' not in this.stdout) and ('NOERROR' not in this.stdout)"
