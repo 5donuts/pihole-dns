@@ -16,18 +16,20 @@
 ---
 - name: Update Pi
   hosts: all
-  tasks:
-  - import_role: 
-      name: update_pi
+  roles:
+    - update_pi
 
 - name: Install & configure unbound
   hosts: unbound
-  tasks:
-  - import_role:
-      name: install_unbound
+  roles:
+    - install_unbound
+
+- name: Configure PiHole DHCP
+  hosts: dhcp
+  roles:
+    - configure_dhcp
 
 - name: Install PiHole
   hosts: all
-  tasks:
-  - import_role:
-      name: install_pihole
+  roles:
+    - install_pihole
