@@ -1,0 +1,65 @@
+# pihole-dns - an Ansible playbook to configure a recursive PiHole DNS server
+# Copyright (C) 2024  Charles German <5donuts@pm.me>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+---
+- name: Configure a PiHole DNS server
+  hosts: all
+  become: yes
+
+  handlers:
+    - name: Include handlers
+      ansible.builtin.import_tasks: tasks/handlers.yml
+
+  pre_tasks:
+    - name: Load PiHole configuration
+      ansible.builtin.include_vars: "{{ item }}"
+      loop:
+        - config.defaults.yml
+        - config.yml
+
+    - name: Ensure apt cache is up to date
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      register: apt_cache
+
+    - name: Ensure dependencies are installed & up-to-date
+      ansible.builtin.apt:
+        state: latest
+        name:
+          - unbound
+          - dnsutils # for dig
+          - ufw
+
+    # Only reboot when /var/run/reboot-required exists
+    # See: https://askubuntu.com/a/1337721
+    - name: Check if a reboot is required
+      ansible.builtin.file:
+        path: /var/run/reboot-required
+        state: absent
+      notify:
+        - Reboot
+
+  tasks:
+    - name: Configure Firewall
+      ansible.builtin.import_tasks: tasks/firewall.yml
+
+    - name: Install Unbound
+      when: install_unbound
+      ansible.builtin.import_tasks: tasks/unbound.yml
+
+    - name: Install PiHole
+      when: install_pihole
+      ansible.builtin.import_tasks: tasks/pihole.yml

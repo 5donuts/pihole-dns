@@ -1,0 +1,99 @@
+# pihole-dns - an Ansible playbook to configure a recursive PiHole DNS server
+# Copyright (C) 2024  Charles German <5donuts@pm.me>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+---
+- name: Write the Unbound configuration file
+  ansible.builtin.template:
+    src: templates/unbound-pi-hole.conf.j2
+    dest: /etc/unbound/unbound.conf.d/pi-hole.conf
+    mode: "0644" # rw-r--r--
+  notify:
+    - Restart Unbound
+    - Test Unbound configuration
+
+# Configure PiHole's FTL DNS server to respect EDNS buffer size
+- block:
+    - name: Ensure /etc/dnsmasq.d/99-edns.conf exists
+      ansible.builtin.file:
+        state: touch
+        path: /etc/dnsmasq.d/99-edns.conf
+
+    - name: Configure FTL to respect Unbound EDNS buffer size
+      ansible.builtin.lineinfile:
+        path: /etc/dnsmasq.d/99-edns.conf
+        regexp: "^edns-packet-max.+$"
+        line: "edns-packet-max={{ unbound_edns_buffer_size }}"
+
+# Initialize the logfile for Unbound to use, if specified
+- when: unbound_logfile is defined
+  block:
+    - name: Create the Unbound logging directory
+      ansible.builtin.file:
+        state: directory
+        path: "{{ unbound_logfile | dirname }}"
+        mode: "0644" # rw-r--r--
+
+    - name: Create the Unbound logfile
+      ansible.builtin.file:
+        state: touch
+        path: "{{ unbound_logfile }}"
+        mode: "0644" # rw-r--r--
+        owner: unbound
+
+# Add an AppArmor exception so Unbound can write to the logfile
+- when:
+    - ansible_facts.os_family == "Debian"
+    - unbound_logfile is defined
+  block:
+    - name: Ensure /etc/apparmor.d/local/usr.sbin.unbound exists
+      ansible.builtin.file:
+        state: touch
+        path: /etc/apparmor.d/local/usr.sbin.unbound
+
+    - name: Add the AppArmor exception for Unbound
+      ansible.builtin.lineinfile:
+        path: /etc/apparmor.d/local/usr.sbin.unbound
+        regexp: "^{{ unbound_logfile }}.+$"
+        line: "{{ unbound_logfile }} rw"
+      notify:
+        - Reload AppArmor
+
+# See: https://docs.pi-hole.net/guides/dns/unbound/#disable-resolvconfconf-entry-for-unbound-required-for-debian-bullseye-releases
+- when:
+    - ansible_facts.os_family == "Debian"
+    - ansible_facts.distribution_version | int >= 11
+  block:
+    - name: Ensure unbound-resolvconf is disabled
+      ansible.builtin.systemd:
+        name: unbound-resolvconf
+        enabled: no
+        state: "stopped"
+      notify:
+        - Restart Unbound
+
+    - name: Disable the file resolvconf_resolvers.conf
+      ansible.builtin.lineinfile:
+        path: /etc/resolvconf.conf
+        regexp: "^unbound_conf=$"
+        line: "#unbound_conf="
+      notify:
+        - Restart Unbound
+
+    - name: Remove resolvconf_resolvers.conf
+      ansible.builtin.file:
+        state: absent
+        path: /etc/unbound/unbound.conf.d/resolvconf_resolvers.conf
+      notify:
+        - Restart Unbound

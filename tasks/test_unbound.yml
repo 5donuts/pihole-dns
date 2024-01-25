@@ -1,5 +1,5 @@
-# pihole-dns - Ansible playbooks to configure a recursive PiHole DNS server
-# Copyright (C) 2022  Charles German <5donuts@pm.me>
+# pihole-dns - an Ansible playbook to configure a recursive PiHole DNS server
+# Copyright (C) 2024  Charles German <5donuts@pm.me>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,17 +14,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ---
-- name: Test DNS resolution
-  ansible.builtin.shell: dig pi-hole.net @{{ unbound_cfg.interface }} {{ unbound_cfg.port }}
+- name: Ensure DNS resolution of pi-hole.net is successful
+  ansible.builtin.command: dig pi-hole.net @{{ unbound_test_addr }} -p {{ unbound_port }}
   register: this
   failed_when: "('ANSWER SECTION' not in this.stdout) and ('NOERROR' not in this.stdout)"
+  changed_when: false
 
-- name: Test DNSSEC validation
-  ansible.builtin.shell: dig sigfail.verteiltesysteme.net @{{ unbound_cfg.interface }} {{ unbound_cfg.port }}
+- name: Ensure DNSSEC validation returns SERVFAIL when expected
+  ansible.builtin.command: dig sigfail.verteiltesysteme.net @{{ unbound_test_addr }} -p {{ unbound_port }}
   register: this
   failed_when: "'ANSWER SECTION' in this.stdout"
+  changed_when: false
 
-- name: Test DNSSEC validation
-  ansible.builtin.shell: dig sigok.verteiltesysteme.net @{{ unbound_cfg.interface }} {{ unbound_cfg.port }}
+- name: Ensure DNSSEC validation returns NOERROR and an IP address when expected
+  ansible.builtin.command: dig sigok.verteiltesysteme.net @{{ unbound_test_addr }} -p {{ unbound_port }}
   register: this
   failed_when: "('ANSWER SECTION' not in this.stdout) and ('NOERROR' not in this.stdout)"
+  changed_when: false

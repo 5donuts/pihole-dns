@@ -1,0 +1,56 @@
+# pihole-dns - an Ansible playbook to configure a recursive PiHole DNS server
+# Copyright (C) 2024  Charles German <5donuts@pm.me>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+---
+- name: Check if 'pihole' command is already present
+  ansible.builtin.command: which pihole
+  failed_when: no
+  changed_when: no
+  register: which_pihole
+
+- name: Create /etc/pihole
+  ansible.builtin.file:
+    state: directory
+    path: /etc/pihole
+    mode: "0744" # rwxr--r--
+  register: create_etc_pihole
+
+- name: Download PiHole basic-install.sh
+  ansible.builtin.get_url:
+    url: https://install.pi-hole.net
+    dest: /etc/pihole/basic-install.sh
+    mode: "0600" # r-xr--r--
+
+- name: Set Unbound as the upstream DNS server
+  when: install_unbound
+  ansible.builtin.set_fact:
+    pihole_upstream_dns:
+      - "{{ unbound_bind_addr }}#{{ unbound_port }}"
+
+- name: Write PiHole configuration file
+  ansible.builtin.template:
+    src: templates/setupVars.conf.j2
+    dest: /etc/pihole/setupVars.conf
+    mode: "0644" # rw-r--r--
+
+- name: Perform a fresh PiHole installation
+  when: which_pihole.rc != 0
+  ansible.builtin.shell:
+    cmd: "/etc/pihole/basic-install.sh --unattended"
+
+- name: Reconfigure an existing PiHole installation
+  when: which_pihole.rc == 0
+  ansible.builtin.shell:
+    cmd: "/etc/pihole/basic-install.sh --reconfigure --unattended"

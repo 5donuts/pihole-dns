@@ -1,0 +1,65 @@
+{#
+ # pihole-dns - an Ansible playbook to configure a recursive PiHole DNS server
+ # Copyright (C) 2024  Charles German <5donuts@pm.me>
+ #
+ # This program is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # (at your option) any later version.
+ #
+ # This program is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ #}
+{#
+ # For a good explanation of values in this file, see the PiHole Docker image
+ # docs at: https://github.com/pi-hole/docker-pi-hole/
+ #}
+PIHOLE_INTERFACE={{ pihole_interface }}
+{#
+ # PiHole requires that there are at least two entries for DNS servers.
+ # If we are using unbound, there will be only one entry (localhost),
+ # so PiHole will automatically add the blank second entry. This causes
+ # Ansible to detect a change in the config file and (unnecessarily)
+ # upload a new one and trigger pihole --reconfigure --unattended.
+ # By checking the number of upstream DNS servers, we can add the blank
+ # second entry (if required) so Ansible won't detect a change in the
+ # config file on future runs.
+ #}
+{% if pihole_upstream_dns | length < 2 %}
+PIHOLE_DNS_1={{ pihole_upstream_dns[0] }}
+PIHOLE_DNS_2=
+{% else %}
+{% for server in pihole_upstream_dns %}
+PIHOLE_DNS_{{ loop.index }}={{ server }}
+{% endfor %}
+{% endif %}
+{# 
+ # The `var | lower` found throughout this template is because the
+ # boolean values are converted from `yes`/`no` to `True`/`False`,
+ # but PiHole is expecting `true`/`false`.
+ #}
+QUERY_LOGGING={{ pihole_log_queries | lower }}
+INSTALL_WEB_SERVER={{ pihole_install_web_server | lower }}
+INSTALL_WEB_INTERFACE={{ pihole_install_web_frontend | lower }}
+LIGHTTPD_ENABLED={{ pihole_enable_lighttpd | lower }}
+{% if pihole_install_web_frontend %}
+{# See: https://discourse.pi-hole.net/t/what-is-setupvars-conf-and-how-do-i-use-it/3533/3 #}
+WEBPASSWORD={{ pihole_web_admin_password | hash('sha256') | hash('sha256') }}
+{% endif %}
+CACHE_SIZE={{ pihole_dnsmasq_cache_size }}
+DNS_FQDN_REQUIRED={{ pihole_never_forward_non_fqdn | lower }}
+DNS_BOGUS_PRIV={{ pihole_never_forward_private_rev_lookups | lower }}
+DNSSEC={{ pihole_use_dnssec | lower }}
+DNSMASQ_LISTENING={{ pihole_dnsmasq_listening }}
+BLOCKING_ENABLED={{ pihole_enable_blocking | lower }}
+{% if pihole_enable_conditional_forwarding %}
+REV_SERVER={{ pihole_enable_conditional_forwarding | lower }}
+REV_SERVER_CIDR={{ pihole_local_network_cidr }}
+REV_SERVER_TARGET={{ pihole_dhcp_server }}
+REV_SERVER_DOMAIN={{ pihole_local_domain_name }}
+{% endif %}

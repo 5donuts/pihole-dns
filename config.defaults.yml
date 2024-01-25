@@ -1,0 +1,149 @@
+# pihole-dns - an Ansible playbook to configure a recursive PiHole DNS server
+# Copyright (C) 2024  Charles German <5donuts@pm.me>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+---
+# This file has a number of default configuration options.
+# Please copy this to `./config.yml` and overwrite any values specific to
+# your installation/needs. Any values not specified in `./config.yml` will
+# be set by this file.
+
+# -------------------------------------------------------------------------------- #
+#                           PiHole Configuration Options                           #
+# -------------------------------------------------------------------------------- #
+install_pihole: yes
+pihole_enable_blocking: yes
+pihole_web_admin_password: "p@ssword123!" # change me!
+
+# If you are not using Unbound as a DNS server, configure the upstream
+# DNS servers to use here. By default, CloudFlare DNS is selected. If
+# you are using Unbound, this variable is ignored.
+pihole_upstream_dns:
+  - 1.1.1.1
+  - 1.0.0.1
+
+pihole_interface: "eth0"
+pihole_log_queries: yes
+pihole_install_web_server: yes
+pihole_install_web_frontend: yes
+pihole_enable_lighttpd: yes
+
+# This setting might be ignored when DNSSEC is enabled?
+pihole_dnsmasq_cache_size: 10000
+
+# This corresponds to the "Interface Settings" section in the web UI.
+# Note that some of these options are dangerous if set on internet-connected devices.
+# A typical home setup where the Pi sits within the local network (and port 53 is _not_
+# forwarded!) is still safe with any of these options.
+# * `local` corresponds to "allow only local requests"
+#   This setting only allows queries from devices that are at most one hop away.
+#   This is the default/recommended setting.
+# * `all` corresponds to "permit all origins"
+#   This setting permits listening on internet origin subnets in addition to local.
+# * `single` corresponds to "respond only on interface ..."
+pihole_dnsmasq_listening: "local"
+
+# This is the "Never forward non-FQDN A and AAAA queries" option in the web UI.
+# When there is a Pi-hole domain set and this option is set, this asks FTL that this
+# domain is purely local and FTL may answer queries from /etc/hosts or DHCP leases
+# but should never forward queries on that domain to any upstream servers. If
+# Conditional Forwarding is enabled, unsetting this option may cause a partial DNS
+# loop under certain circumstances (e.g. if a client would send TLD DNSSEC queries).
+pihole_never_forward_non_fqdn: yes
+
+# This is the "Never forward reverse lookups for private IP ranges" option in the web UI.
+# All reverse lookups for private IP ranges (i.e., 192.168.0.x/24, etc.) which are not
+# found in /etc/hosts or the DHCP leases are answered with "no such domain" rather than
+# being forwarded upstream. The set of prefixes affected is the list given in RFC6303.
+# Important: Enabling this and `pihole_never_forward_non_fqdn` may increase your privacy,
+# but may also prevent you from being able to access local hostnames if the Pi-hole is not
+# used as the DHCP server.
+pihole_never_forward_private_rev_lookups: yes
+
+# This is the "Use DNSSEC" option in the web UI.
+# Validate DNS replies and cache DNSSEC data. When forwarding DNS queries, Pi-hole requests
+# the DNSSEC records needed to validate the replies. If a domain fails validation or the
+# upstream does not support DNSSEC, this setting can cause issues resolving domains. Use an
+# upstream DNS server which supports DNSSEC when activating DNSSEC. Note that the size of
+# your log might increase significantly when enabling DNSSEC.
+pihole_use_dnssec: yes
+
+# These options correspond to the "Conditional Fowarding" section in the web UI.
+# If not configured as your DHCP server, Pi-hole typically won't be able to determine the names
+# of devices on your local network. As a result, tables such as Top Clients will only show IP
+# addresses. One solution for this is to configure Pi-hole to forward these requests to your
+# DHCP server (most likely your router), but only for devices on your home network.
+# Enabling Conditional Forwarding will also forward all hostnames (i.e., non-FQDNs) to the
+# router when "Never forward non-FQDNs" is not enabled.
+pihole_enable_conditional_forwarding: yes
+pihole_dhcp_server: 192.168.0.1
+pihole_local_network_cidr: 192.168.0.0/16
+pihole_local_domain_name: "home.lan"
+
+# -------------------------------------------------------------------------------- #
+#                         Pi System Configuration Options                          #
+# -------------------------------------------------------------------------------- #
+firewall_allowed_cidrs:
+  - 192.168.0.0/16
+
+# -------------------------------------------------------------------------------- #
+#                          Unbound Configuration Options                           #
+# -------------------------------------------------------------------------------- #
+# See: https://docs.pi-hole.net/guides/dns/unbound/#configure-unbound
+install_unbound: yes
+unbound_bind_addr: 127.0.0.1
+unbound_port: 5335
+
+# See: https://docs.pi-hole.net/guides/dns/unbound/#add-logging-to-unbound
+unbound_log_verbosity: 0
+unbound_log_queries: "no"
+# unbound_logfile: "/var/log/unbound/unbound.log" # if unset, use syslog
+
+unbound_do_ipv4: "yes"
+unbound_do_udp: "yes"
+unbound_do_tcp: "yes"
+unbound_do_ipv6: "no"
+unbound_prefer_ipv6: "no"
+
+# Trust glue only if it is within the server's authority
+unbound_harden_glue: "yes"
+
+# Require DNSSEC data for trust-anchored zones, if such data is absent, the zone becomes BOGUS
+unbound_harden_dnssec_stripped: "yes"
+
+# Perform prefetching of close to expired message cache entries
+# This only applies to domains that have been frequently queried
+unbound_prefetch: "yes"
+
+# One thread should be sufficient, can be increased on beefy machines.
+# In reality for most users running on small networks or on a single machine, it should be
+# unnecessary to seek performance enhancement by increasing num-threads above 1.
+unbound_num_threads: 1
+
+# Ensure kernel buffer is large enough to not lose messages in traffic spikes
+unbound_kernel_buffer: 1m
+
+# Ensure privacy of local IP ranges
+unbound_local_ip_cidrs:
+  - 192.168.0.0/16
+  - 169.254.0.0/16
+  - 172.16.0.0/12
+  - 10.0.0.0/8
+  - fd00::/8
+  - fe80::/10
+
+# See:
+# * https://docs.pi-hole.net/guides/dns/unbound/#configure-unbound
+# * https://indico.dns-oarc.net/event/36/contributions/776/
+unbound_edns_buffer_size: 1232

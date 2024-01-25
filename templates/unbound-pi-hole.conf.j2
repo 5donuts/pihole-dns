@@ -1,0 +1,49 @@
+{# See: https://docs.pi-hole.net/guides/dns/unbound/#configure-unbound #}
+server:
+  verbosity: {{ unbound_log_verbosity }}
+  log-queries: {{ unbound_log_queries }}
+{% if unbound_logfile is defined %}
+  logfile: {{ unbound_logfile }}
+{% endif %}
+
+  interface: {{ unbound_bind_addr }}
+  port: {{ unbound_port }}
+
+  do-ip4: {{ unbound_do_ipv4 }}
+  do-udp: {{ unbound_do_udp }}
+  do-tcp: {{ unbound_do_tcp }}
+
+  do-ip6: {{ unbound_do_ipv6 }}
+  prefer-ip6: {{ unbound_prefer_ipv6 }}
+
+  harden-glue: {{ unbound_harden_glue }}
+  harden-dnssec-stripped: {{ unbound_harden_dnssec_stripped }}
+
+  # Don't use Capitalization randomization as it known to cause DNSSEC issues sometimes
+  # see https://discourse.pi-hole.net/t/unbound-stubby-or-dnscrypt-proxy/9378 for further details
+  use-cap-for-id: no
+
+  # Reduce EDNS reassembly buffer size.
+  # IP fragmentation is unreliable on the Internet today, and can cause
+  # transmission failures when large DNS messages are sent via UDP. Even
+  # when fragmentation does work, it may not be secure; it is theoretically
+  # possible to spoof parts of a fragmented DNS message, without easy
+  # detection at the receiving end. Recently, there was an excellent study
+  # >>> Defragmenting DNS - Determining the optimal maximum UDP response size for DNS <<<
+  # by Axel Koolhaas, and Tjeerd Slokker (https://indico.dns-oarc.net/event/36/contributions/776/)
+  # in collaboration with NLnet Labs explored DNS using real world data from the
+  # the RIPE Atlas probes and the researchers suggested different values for
+  # IPv4 and IPv6 and in different scenarios. They advise that servers should
+  # be configured to limit DNS messages sent over UDP to a size that will not
+  # trigger fragmentation on typical network links. DNS servers can switch
+  # from UDP to TCP when a DNS response is too big to fit in this limited
+  # buffer size. This value has also been suggested in DNS Flag Day 2020.
+  edns-buffer-size: {{ unbound_edns_buffer_size }}
+
+  prefetch: {{ unbound_prefetch }}
+  num-threads: {{ unbound_num_threads }}
+  so-rcvbuf: {{ unbound_kernel_buffer }}
+
+{% for cidr in unbound_local_ip_cidrs %}
+  private-address: {{ cidr }}
+{% endfor %}
