@@ -1,3 +1,0 @@
-{% for entry in static_ip_assignments %}
-dhcp-host={{ entry.mac }},{{ entry.ip }},{{ entry.hostname }}
-{% endfor %}
