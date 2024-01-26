@@ -18,16 +18,16 @@
   ansible.builtin.command: dig pi-hole.net @{{ unbound_bind_addr }} -p {{ unbound_port }}
   register: this
   failed_when: "('ANSWER SECTION' not in this.stdout) and ('NOERROR' not in this.stdout)"
-  changed_when: false
+  changed_when: no
 
 - name: Ensure DNSSEC validation returns SERVFAIL when expected
   ansible.builtin.command: dig sigfail.verteiltesysteme.net @{{ unbound_bind_addr }} -p {{ unbound_port }}
   register: this
   failed_when: "'ANSWER SECTION' in this.stdout"
-  changed_when: false
+  changed_when: no
 
 - name: Ensure DNSSEC validation returns NOERROR and an IP address when expected
   ansible.builtin.command: dig sigok.verteiltesysteme.net @{{ unbound_bind_addr }} -p {{ unbound_port }}
   register: this
   failed_when: "('ANSWER SECTION' not in this.stdout) and ('NOERROR' not in this.stdout)"
-  changed_when: false
+  changed_when: no
