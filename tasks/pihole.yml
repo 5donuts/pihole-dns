@@ -45,6 +45,20 @@
     dest: /etc/pihole/setupVars.conf
     mode: "0644" # rw-r--r--
 
+- name: Configure static DHCP leases
+  when:
+    - enable_pihole_dhcp
+    - pihole_dhcp_static_leases is defined
+  ansible.builtin.template:
+    src: templates/04-pihole-static-dhcp.conf.j2
+    dest: /etc/dnsmasq.d/04-pihole-static-dhcp.conf
+
+- name: Disable static DHCP leases
+  when: not enable_pihole_dhcp
+  ansible.builtin.file:
+    state: absent
+    path: /etc/dnsmasq.d/04-pihole-static-dhcp.conf
+
 - name: Perform a fresh PiHole installation
   when: which_pihole.rc != 0
   ansible.builtin.shell:

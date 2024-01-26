@@ -92,6 +92,26 @@ pihole_local_network_cidr: 192.168.0.0/16
 pihole_local_domain_name: "home.lan"
 
 # -------------------------------------------------------------------------------- #
+#                        PiHole DHCP Configuration Options                         #
+# -------------------------------------------------------------------------------- #
+# Be sure to disable DHCP on your router before enabling this setting!!
+enable_pihole_dhcp: no
+pihole_dhcp_start: 192.168.1.2 # Allocate 192.168.1.0/24 for dynamic addresses
+pihole_dhcp_end: 192.168.1.254
+pihole_dhcp_router: 192.168.0.1
+pihole_dhcp_lease_time: 24 # in hours
+pihole_dhcp_ipv6: no
+pihole_dhcp_rapid_commit: no
+
+# Configure any static leases on your network.
+# To ensure a DHCP client is never given a reserved address, ensure there is no
+# overlap between the static addresses here and the DHCP range given above.
+# pihole_dhcp_static_leases:
+#   - mac_addr: ab:cd:ef:12:34:56
+#     hostname: example-host
+#     ip_addr: 192.168.0.10
+
+# -------------------------------------------------------------------------------- #
 #                         Pi System Configuration Options                          #
 # -------------------------------------------------------------------------------- #
 firewall_allowed_cidrs:

@@ -63,3 +63,14 @@ REV_SERVER_CIDR={{ pihole_local_network_cidr }}
 REV_SERVER_TARGET={{ pihole_dhcp_server }}
 REV_SERVER_DOMAIN={{ pihole_local_domain_name }}
 {% endif %}
+{% if enable_pihole_dhcp %}
+DHCP_ACTIVE={{ enable_pihole_dhcp | lower }}
+DHCP_START={{ pihole_dhcp_start }}
+DHCP_END={{ pihole_dhcp_end }}
+DHCP_ROUTER={{ pihole_dhcp_router }}
+DHCP_LEASETIME={{ pihole_dhcp_lease_time }}
+PIHOLE_DOMAIN={{ pihole_local_domain_name }}
+{# These options are not typos, they are just randomly lowercase #}
+DHCP_IPv6={{ pihole_dhcp_ipv6 | lower }}
+DHCP_rapid_commit={{ pihole_dhcp_rapid_commit | lower }}
+{% endif %}
