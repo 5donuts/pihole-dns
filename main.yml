@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ---
 - name: Configure a PiHole DNS server
-  hosts: all
+  hosts: pihole
   become: yes
 
   handlers:
