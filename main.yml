@@ -16,6 +16,7 @@
 ---
 - name: Configure a PiHole DNS server
   hosts: pihole
+  gather_facts: yes
   become: yes
 
   handlers:

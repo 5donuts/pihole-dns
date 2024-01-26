@@ -49,8 +49,12 @@
   when: which_pihole.rc != 0
   ansible.builtin.shell:
     cmd: "/etc/pihole/basic-install.sh --unattended"
+  notify:
+    - Test PiHole configuration
 
 - name: Reconfigure an existing PiHole installation
   when: which_pihole.rc == 0
   ansible.builtin.shell:
     cmd: "/etc/pihole/basic-install.sh --reconfigure --unattended"
+  notify:
+    - Test PiHole configuration

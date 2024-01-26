@@ -1,0 +1,49 @@
+# pihole-dns - an Ansible playbook to configure a recursive PiHole DNS server
+# Copyright (C) 2024  Charles German <5donuts@pm.me>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+---
+- name: Fetch the IP address of the interface PiHole is using
+  ansible.builtin.set_fact:
+    # According to https://serverfault.com/a/978216/532978, this '~' should concat the value of pihole_interface.
+    # E.g., we would be fetching hostvars[inventory_hostname][ansible_eth0] if pihole_interface is 'eth0'.
+    pihole_bind_addr: "{{ hostvars[inventory_hostname]['ansible_'~pihole_interface].ipv4.address }}"
+
+- name: Ensure DNS resolution of pi-hole.net is successful
+  ansible.builtin.command: dig pi-hole.net @{{ pihole_bind_addr }}
+  register: this
+  failed_when: "('ANSWER SECTION' not in this.stdout) and ('NOERROR' not in this.stdout)"
+  changed_when: no
+
+# This domain comes from the StevenBlack/hosts list
+# See: https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+- name: Ensure DNS resolution of an ad domain is unsuccessful
+  ansible.builtin.command: dig ck.getcookiestxt.com @{{ pihole_bind_addr }}
+  register: this
+  failed_when: "'ANSWER SECTION' in this.stdout"
+  changed_when: no
+
+- name: Ensure DNSSEC validation returns SERVFAIL when expected
+  when: pihole_use_dnssec
+  ansible.builtin.command: dig sigfail.verteiltesysteme.net @{{ pihole_bind_addr }}
+  register: this
+  failed_when: "'ANSWER SECTION' in this.stdout"
+  changed_when: no
+
+- name: Ensure DNSSEC validation returns NOERROR and an IP address when expected
+  when: pihole_use_dnssec
+  ansible.builtin.command: dig sigok.verteiltesysteme.net @{{ pihole_bind_addr }}
+  register: this
+  failed_when: "('ANSWER SECTION' not in this.stdout) and ('NOERROR' not in this.stdout)"
+  changed_when: no
