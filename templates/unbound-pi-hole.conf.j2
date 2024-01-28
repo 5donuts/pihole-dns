@@ -74,4 +74,5 @@ forward-zone:
   forward-tls-upstream: yes
 {% for provider in unbound_dot_providers %}
   forward-addr: {{ provider.addr }}@{{ provider.port | default(853) }}#{{ provider.name }}
+{% endfor %}
 {% endif %}
