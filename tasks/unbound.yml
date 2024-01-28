@@ -116,3 +116,11 @@
         path: /etc/unbound/unbound.conf.d/resolvconf_resolvers.conf
       notify:
         - Restart Unbound
+
+- name: Ensure Unbound is running & configured to start at boot
+  ansible.builtin.systemd:
+    name: unbound
+    enabled: yes
+    state: "started"
+  notify:
+    - Test Unbound configuration
