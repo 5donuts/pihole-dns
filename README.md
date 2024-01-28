@@ -9,7 +9,7 @@ I used to use a modified version of [geerlingguy/internet-pi](https://github.com
 **PiHole**: Install and configure [PiHole](pi-hole.net) to do network-wide DNS blackholing of ads.
 
 **Unbound**: Install and configure [Unbound](https://www.nlnetlabs.nl/projects/unbound/about/) as a recursive DNS server.
-Unbound has a number of features that help increase your online privacy, especially when compared to using Google DNS (8.8.8.8) as your upstream DNS provider for PiHole including DNS-over-TLS and DNS-over-HTTPS.
+Unbound has a number of features that help increase your online privacy, especially when compared to using Google DNS (`8.8.8.8`) as your upstream DNS provider for PiHole including DNS-over-TLS and DNS-over-HTTPS.
 
 ## Setup
 
