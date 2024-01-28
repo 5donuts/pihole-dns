@@ -20,6 +20,17 @@
 # be set by this file.
 
 # -------------------------------------------------------------------------------- #
+#                          General Configuration Options                           #
+# -------------------------------------------------------------------------------- #
+firewall_allowed_cidrs:
+  - 192.168.0.0/16
+
+pi_static_ip: 192.168.0.100 # Static IP address of the Pi to configure
+pi_dhcp_fallback: no # If 'pi_static_ip' is unavailable, get a DHCP lease?
+router_ip: 192.168.0.1 # IP address of the router
+pihole_interface: "eth0"
+
+# -------------------------------------------------------------------------------- #
 #                           PiHole Configuration Options                           #
 # -------------------------------------------------------------------------------- #
 install_pihole: yes
@@ -33,7 +44,6 @@ pihole_upstream_dns:
   - 1.1.1.1
   - 1.0.0.1
 
-pihole_interface: "eth0"
 pihole_log_queries: yes
 pihole_install_web_server: yes
 pihole_install_web_frontend: yes
@@ -86,8 +96,7 @@ pihole_use_dnssec: yes
 # DHCP server (most likely your router), but only for devices on your home network.
 # Enabling Conditional Forwarding will also forward all hostnames (i.e., non-FQDNs) to the
 # router when "Never forward non-FQDNs" is not enabled.
-pihole_enable_conditional_forwarding: yes
-pihole_dhcp_server: 192.168.0.1
+pihole_enable_conditional_forwarding: no # TODO: need to figure out why this config is broken
 pihole_local_network_cidr: 192.168.0.0/16
 pihole_local_domain_name: "home.lan"
 
@@ -112,16 +121,10 @@ pihole_dhcp_rapid_commit: no
 #     ip_addr: 192.168.0.10
 
 # -------------------------------------------------------------------------------- #
-#                         Pi System Configuration Options                          #
-# -------------------------------------------------------------------------------- #
-firewall_allowed_cidrs:
-  - 192.168.0.0/16
-
-# -------------------------------------------------------------------------------- #
 #                          Unbound Configuration Options                           #
 # -------------------------------------------------------------------------------- #
 # See: https://docs.pi-hole.net/guides/dns/unbound/#configure-unbound
-install_unbound: yes
+install_unbound: no
 unbound_bind_addr: 127.0.0.1
 unbound_port: 5335
 

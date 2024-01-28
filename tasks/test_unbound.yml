@@ -14,19 +14,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ---
-- name: Ensure DNS resolution of pi-hole.net is successful
+- name: "Unbound: Ensure DNS resolution of pi-hole.net is successful"
   ansible.builtin.command: dig pi-hole.net @{{ unbound_bind_addr }} -p {{ unbound_port }}
   register: this
   failed_when: "('ANSWER SECTION' not in this.stdout) and ('NOERROR' not in this.stdout)"
   changed_when: no
 
-- name: Ensure DNSSEC validation returns SERVFAIL when expected
+- name: "Unbound: Ensure DNSSEC validation returns SERVFAIL when expected"
   ansible.builtin.command: dig sigfail.verteiltesysteme.net @{{ unbound_bind_addr }} -p {{ unbound_port }}
   register: this
   failed_when: "'ANSWER SECTION' in this.stdout"
   changed_when: no
 
-- name: Ensure DNSSEC validation returns NOERROR and an IP address when expected
+- name: "Unbound: Ensure DNSSEC validation returns NOERROR and an IP address when expected"
   ansible.builtin.command: dig sigok.verteiltesysteme.net @{{ unbound_bind_addr }} -p {{ unbound_port }}
   register: this
   failed_when: "('ANSWER SECTION' not in this.stdout) and ('NOERROR' not in this.stdout)"

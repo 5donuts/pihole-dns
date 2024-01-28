@@ -60,7 +60,11 @@ BLOCKING_ENABLED={{ pihole_enable_blocking | lower }}
 {% if pihole_enable_conditional_forwarding %}
 REV_SERVER={{ pihole_enable_conditional_forwarding | lower }}
 REV_SERVER_CIDR={{ pihole_local_network_cidr }}
-REV_SERVER_TARGET={{ pihole_dhcp_server }}
+{% if enable_pihole_dhcp %}
+REV_SERVER_TARGET=127.0.0.1
+{% else %}
+REV_SERVER_TARGET={{ router_ip }}
+{% endif %}
 REV_SERVER_DOMAIN={{ pihole_local_domain_name }}
 {% endif %}
 {% if enable_pihole_dhcp %}

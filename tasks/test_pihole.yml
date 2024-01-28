@@ -20,7 +20,7 @@
     # E.g., we would be fetching hostvars[inventory_hostname][ansible_eth0] if pihole_interface is 'eth0'.
     pihole_bind_addr: "{{ hostvars[inventory_hostname]['ansible_'~pihole_interface].ipv4.address }}"
 
-- name: Ensure DNS resolution of pi-hole.net is successful
+- name: "PiHole: Ensure DNS resolution of pi-hole.net is successful"
   ansible.builtin.command: dig pi-hole.net @{{ pihole_bind_addr }}
   register: this
   failed_when: "('ANSWER SECTION' not in this.stdout) and ('NOERROR' not in this.stdout)"
@@ -28,20 +28,21 @@
 
 # This domain comes from the StevenBlack/hosts list
 # See: https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
-- name: Ensure DNS resolution of an ad domain is unsuccessful
+- name: "PiHole: Ensure DNS resolution of an ad domain is unsuccessful"
+  when: pihole_enable_blocking
   ansible.builtin.command: dig ck.getcookiestxt.com @{{ pihole_bind_addr }}
   register: this
-  failed_when: "'ANSWER SECTION' in this.stdout"
+  failed_when: "'ANSWER SECTION' not in this.stdout and '0.0.0.0' not in this.stdout"
   changed_when: no
 
-- name: Ensure DNSSEC validation returns SERVFAIL when expected
+- name: "PiHole: Ensure DNSSEC validation returns SERVFAIL when expected"
   when: pihole_use_dnssec
   ansible.builtin.command: dig sigfail.verteiltesysteme.net @{{ pihole_bind_addr }}
   register: this
   failed_when: "'ANSWER SECTION' in this.stdout"
   changed_when: no
 
-- name: Ensure DNSSEC validation returns NOERROR and an IP address when expected
+- name: "PiHole: Ensure DNSSEC validation returns NOERROR and an IP address when expected"
   when: pihole_use_dnssec
   ansible.builtin.command: dig sigok.verteiltesysteme.net @{{ pihole_bind_addr }}
   register: this

@@ -20,18 +20,21 @@
   changed_when: no
   register: which_pihole
 
-- name: Create /etc/pihole
+- name: Ensure /etc/pihole is present
   ansible.builtin.file:
     state: directory
     path: /etc/pihole
-    mode: "0744" # rwxr--r--
   register: create_etc_pihole
 
 - name: Download PiHole basic-install.sh
   ansible.builtin.get_url:
     url: https://install.pi-hole.net
     dest: /etc/pihole/basic-install.sh
-    mode: "0600" # r-xr--r--
+
+- name: Ensure PiHole install script is executable
+  ansible.builtin.file:
+    path: /etc/pihole/basic-install.sh
+    mode: "0554" # r-xr-xr--
 
 - name: Set Unbound as the upstream DNS server
   when: install_unbound
@@ -43,7 +46,7 @@
   ansible.builtin.template:
     src: templates/setupVars.conf.j2
     dest: /etc/pihole/setupVars.conf
-    mode: "0644" # rw-r--r--
+  register: pihole_config
 
 - name: Configure static DHCP leases
   when:
@@ -52,23 +55,23 @@
   ansible.builtin.template:
     src: templates/04-pihole-static-dhcp.conf.j2
     dest: /etc/dnsmasq.d/04-pihole-static-dhcp.conf
+  register: dhcp_leases
 
 - name: Disable static DHCP leases
   when: not enable_pihole_dhcp
   ansible.builtin.file:
     state: absent
     path: /etc/dnsmasq.d/04-pihole-static-dhcp.conf
+  register: dhcp_leases
 
 - name: Perform a fresh PiHole installation
-  when: which_pihole.rc != 0
-  ansible.builtin.shell:
-    cmd: "/etc/pihole/basic-install.sh --unattended"
+  when: which_pihole.rc != 0 or create_etc_pihole.changed
+  ansible.builtin.command: /etc/pihole/basic-install.sh --unattended
   notify:
     - Test PiHole configuration
 
 - name: Reconfigure an existing PiHole installation
-  when: which_pihole.rc == 0
-  ansible.builtin.shell:
-    cmd: "/etc/pihole/basic-install.sh --reconfigure --unattended"
+  when: which_pihole.rc == 0 and (pihole_config.changed or dhcp_leases.changed)
+  ansible.builtin.command: /etc/pihole/basic-install.sh --reconfigure --unattended
   notify:
     - Test PiHole configuration

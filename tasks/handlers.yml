@@ -39,6 +39,9 @@
         state: restarted
         daemon_reload: yes
 
+- name: Restart FTL
+  ansible.builtin.command: pihole restartdns
+
 - name: Test Unbound configuration
   ansible.builtin.include_tasks: tasks/test_unbound.yml
 

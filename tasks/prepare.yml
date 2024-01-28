@@ -14,33 +14,31 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ---
-- name: Configure a PiHole DNS server
-  hosts: pihole
-  gather_facts: yes
-  become: yes
+- name: Ensure apt cache is up to date
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
 
-  handlers:
-    - name: Include handlers
-      ansible.builtin.import_tasks: tasks/handlers.yml
+- name: Ensure dependencies are installed & up-to-date
+  ansible.builtin.apt:
+    state: latest
+    name:
+      - dnsutils # for dig
+      - ufw
 
-  pre_tasks:
-    - name: Load PiHole configuration
-      ansible.builtin.include_vars: "{{ item }}"
-      loop:
-        - config.defaults.yml
-        - config.yml
+# Only reboot when /var/run/reboot-required exists
+# See: https://askubuntu.com/a/1337721
+- name: Check if a reboot is required
+  ansible.builtin.file:
+    path: /var/run/reboot-required
+    state: absent
+  notify:
+    - Reboot
 
-    - name: Prepare the Pi
-      ansible.builtin.import_tasks: tasks/prepare.yml
-
-  tasks:
-    - name: Configure Firewall
-      ansible.builtin.import_tasks: tasks/firewall.yml
-
-    - name: Configure Unbound
-      when: install_unbound
-      ansible.builtin.import_tasks: tasks/unbound.yml
-
-    - name: Configure PiHole
-      when: install_pihole
-      ansible.builtin.import_tasks: tasks/pihole.yml
+- name: Configure a static IP for the Pi
+  ansible.builtin.template:
+    src: templates/dhcpcd.conf.j2
+    dest: /etc/dhcpcd.conf
+    mode: "0644" # rw-r--r--
+  notify:
+    - Reboot
