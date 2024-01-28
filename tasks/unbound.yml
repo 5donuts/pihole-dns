@@ -96,7 +96,13 @@
       notify:
         - Restart Unbound
 
+    - name: Check if /etc/resolvconf.conf exists
+      ansible.builtin.stat:
+        path: /etc/resolvconf.conf
+      register: result
+
     - name: Disable the file resolvconf_resolvers.conf
+      when: result.stat.exists
       ansible.builtin.lineinfile:
         path: /etc/resolvconf.conf
         regexp: "^unbound_conf=$"
