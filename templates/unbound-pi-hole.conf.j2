@@ -64,3 +64,14 @@ server:
 {% for cidr in unbound_local_ip_cidrs %}
   private-address: {{ cidr }}
 {% endfor %}
+{% if unbound_enable_dot %}
+  tls-cert-bundle: {{ system_certificate_bundle }}
+{% endif %}
+
+{% if unbound_enable_dot %}
+forward-zone:
+  name: "."
+  forward-tls-upstream: yes
+{% for provider in unbound_dot_providers %}
+  forward-addr: {{ provider.addr }}@{{ provider.port | default(853) }}#{{ provider.name }}
+{% endif %}

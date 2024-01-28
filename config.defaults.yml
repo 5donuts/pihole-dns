@@ -30,6 +30,11 @@ pi_dhcp_fallback: no # If 'pi_static_ip' is unavailable, get a DHCP lease?
 router_ip: 192.168.0.1 # IP address of the router
 pihole_interface: "eth0"
 
+# This option is only used if you configure DNS-over-TLS.
+# On Debian-based systems it is typically /etc/ssl/certs/ca-certificates.crt
+# On Fedora-based systems it is typically /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+system_certificate_bundle: /etc/ssl/certs/ca-certificates.crt
+
 # -------------------------------------------------------------------------------- #
 #                           PiHole Configuration Options                           #
 # -------------------------------------------------------------------------------- #
@@ -170,3 +175,25 @@ unbound_local_ip_cidrs:
 # * https://docs.pi-hole.net/guides/dns/unbound/#configure-unbound
 # * https://indico.dns-oarc.net/event/36/contributions/776/
 unbound_edns_buffer_size: 1232
+# Configure encrypted DNS using DNS-over-TLS (DoT) or DNS-over-HTTPS (DoH).
+# For a primer, see:
+# * https://en.wikipedia.org/wiki/DNS_over_TLS
+# * https://en.wikipedia.org/wiki/DNS_over_HTTPS
+#
+# The following settings will have `_dot_` in their name if they correspond
+# to a DNS-over-TLS setting and a `_doh_` in their name if they correspond
+# to a DNS-over-HTTPS setting.
+#
+# NOTE: you should only enable one of these settings at a time. To help
+# decide which, read: https://www.cloudflare.com/learning/dns/dns-over-tls/
+unbound_enable_dot: no
+unbound_dot_providers:
+  - addr: 1.1.1.1
+    name: cloudflare-dns.com
+    # port: 853 # Only specify this if it's _not_ 853
+  - addr: 1.0.0.1
+    name: cloudflare-dns.com
+  - addr: 2606:4700:4700::1111
+    name: cloudflare-dns.com
+  - addr: 2606:4700:4700::1001
+    name: cloudflare-dns.com
