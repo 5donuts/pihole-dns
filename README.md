@@ -11,6 +11,9 @@ I used to use a modified version of [geerlingguy/internet-pi](https://github.com
 **Unbound**: Install and configure [Unbound](https://www.nlnetlabs.nl/projects/unbound/about/) as a recursive DNS server.
 Unbound has a number of features that help increase your online privacy, especially when compared to using Google DNS (`8.8.8.8`) as your upstream DNS provider for PiHole including DNS-over-TLS and DNS-over-HTTPS.
 
+If you configure DNS-over-TLS (`unbound_enable_dot: yes`), the default DoT provider is [CloudFlare](https://developers.cloudflare.com/1.1.1.1/encryption/dns-over-tls/).
+You can change this by setting `unbound_dot_providers` in `config.yml`.
+
 ## Setup
 
 1. Install Ansible
