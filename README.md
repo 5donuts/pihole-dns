@@ -13,6 +13,7 @@ Unbound has a number of features that help increase your online privacy, especia
 
 If you configure DNS-over-TLS (`unbound_enable_dot: yes`), the default DoT provider is [CloudFlare](https://developers.cloudflare.com/1.1.1.1/encryption/dns-over-tls/).
 You can change this by setting `unbound_dot_providers` in `config.yml`.
+If you are using CloudFlare as your DoT provider, you can verify DNS-over-TLS is enabled by visiting https://1.1.1.1/help.
 
 ## Setup
 
