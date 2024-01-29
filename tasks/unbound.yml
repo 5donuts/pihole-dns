@@ -31,8 +31,13 @@
     - Restart Unbound
     - Test Unbound configuration
 
-# Configure PiHole's FTL DNS server to respect EDNS buffer size
-- name: Ensure /etc/dnsmasq.d/99-edns.conf exists
+- name: Check if /etc/dnsmasq.d/99-edns.conf exists
+  ansible.builtin.stat:
+    path: /etc/dnsmasq.d/99-edns.conf
+  register: result
+
+- name: Create /etc/dnsmasq.d/99-edns.conf
+  when: not result.stat.exists
   ansible.builtin.file:
     state: touch
     path: /etc/dnsmasq.d/99-edns.conf
