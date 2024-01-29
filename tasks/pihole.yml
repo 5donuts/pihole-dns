@@ -64,6 +64,13 @@
     path: /etc/dnsmasq.d/04-pihole-static-dhcp.conf
   register: dhcp_leases
 
+- name: Configure custom DNS entries
+  when: pihole_custom_dns_entries is defined
+  ansible.builtin.template:
+    src: templates/custom.list.j2
+    dest: /etc/pihole/custom.list
+    mode: "0644" # rw-r--r--
+
 - name: Perform a fresh PiHole installation
   when: which_pihole.rc != 0 or create_etc_pihole.changed
   ansible.builtin.command: /etc/pihole/basic-install.sh --unattended

@@ -49,6 +49,12 @@ pihole_upstream_dns:
   - 1.1.1.1
   - 1.0.0.1
 
+# If you want to specify any custom domain names on your network, you can
+# do so here.
+# pihole_custom_dns_entries:
+#   - name: pihole.lan
+#     addr: 192.168.0.100
+
 pihole_log_queries: yes
 pihole_install_web_server: yes
 pihole_install_web_frontend: yes
