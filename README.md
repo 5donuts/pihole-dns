@@ -20,10 +20,9 @@ If you are using CloudFlare as your DoT provider, you can verify DNS-over-TLS is
 1. Install Ansible
 2. `git clone git@github.com:5donuts/pihole-dns.git`
 3. `ansible-galaxy collection install -r requirements.yml`
-4. Modify `inventory.ini` to match your setup (i.e., set your Pi's IP address or configure a local connection)
-5. `cp config.defaults.yml config.yml`, then modify `config.yml` to suit your needs (i.e., change the Pi password, enable & disable components)
-6. `cp inventory.example.ini inventory.ini`, then modify `inventory.ini` to suit your needs (e.g., set the actual IP address of the Pi on your network, configure connection variables)
-7. `ansible-playbook -i inventory.ini main.yml`
+4. `cp config.defaults.yml config.yml`, then modify `config.yml` to suit your needs (i.e., change the Pi password, enable & disable components)
+5. `cp inventory.example.ini inventory.ini`, then modify `inventory.ini` to suit your needs (e.g., set the actual IP address of the Pi on your network, configure connection variables)
+6. `ansible-playbook -i inventory.ini main.yml`
 
 ## License
 
