@@ -82,3 +82,9 @@
   ansible.builtin.command: /etc/pihole/basic-install.sh --reconfigure --unattended
   notify:
     - Test PiHole configuration
+
+- name: Update an existing PiHole installation
+  when: which_pihole.rc == 0 and not pihole_config.changed
+  ansible.builtin.command: pihole -up
+  notify:
+    - Test PiHole configuration
