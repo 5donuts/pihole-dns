@@ -34,13 +34,37 @@
       ansible.builtin.apt:
         update_cache: yes
         cache_valid_time: 3600
+      register: cache
 
-    - name: Ensure dependencies are installed & up-to-date
+    - name: Ensure dependencies are installed
       ansible.builtin.apt:
-        state: latest
+        state: present
         name:
           - dnsutils # for dig
           - ufw
+      register: packages
+
+    - name: Update all installed packages
+      when: cache.changed or packages.changed
+      ansible.builtin.apt:
+        name: "*"
+        state: latest
+      register: this
+
+    - name: Check if a reboot is required
+      when: this.changed
+      ansible.builtin.file:
+        path: /var/run/reboot-required
+        state: absent
+      register: this
+
+    - when: this.changed
+      block:
+        - name: Restart the Pi
+          ansible.builtin.reboot:
+
+        - name: Wait for the reboot to complete
+          ansible.builtin.wait_for_connection:
 
     - name: Configure a static IP for the Pi
       ansible.builtin.template:
