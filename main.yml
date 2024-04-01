@@ -49,14 +49,6 @@
         mode: "0644" # rw-r--r--
       register: static_ip
 
-    - when: static_ip.changed
-      block:
-        - name: Restart the Pi
-          ansible.builtin.reboot:
-
-        - name: Wait for the reboot to complete
-          ansible.builtin.wait_for_connection:
-
   tasks:
     - name: Configure Firewall
       ansible.builtin.import_tasks: tasks/firewall.yml
